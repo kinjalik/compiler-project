@@ -19,10 +19,9 @@ class Scanner(input: String) : Iterator<Token> {
     override fun hasNext() = inputIterator.hasNext()
     override fun next(): Token {
         var curChar = getNextChar() ?: throw NoSuchElementException()
-        while (curChar in separators)
-            curChar = getNextChar() ?: throw NoSuchElementException()
 
         return when (curChar) {
+            in separators -> PhantomToken(curChar)
             '(' -> ParenthesisTokens(ParenthesisType.LEFT)
             ')' -> ParenthesisTokens(ParenthesisType.RIGHT)
             in digits -> readDigit(curChar)
