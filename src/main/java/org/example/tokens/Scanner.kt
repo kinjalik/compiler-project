@@ -1,6 +1,5 @@
 package org.example.tokens
 
-import org.example.exceptions.UnknownTokenException
 import java.util.LinkedList
 import java.util.Queue
 
@@ -22,8 +21,8 @@ class Scanner(input: String) : Iterator<Token> {
 
         return when (curChar) {
             in separators -> PhantomToken(curChar)
-            '(' -> ParenthesisTokens(ParenthesisType.LEFT)
-            ')' -> ParenthesisTokens(ParenthesisType.RIGHT)
+            '(' -> ParenthesisToken(ParenthesisType.LEFT)
+            ')' -> ParenthesisToken(ParenthesisType.RIGHT)
             in digits -> readDigit(curChar)
             else -> readAtom(curChar)
         }
