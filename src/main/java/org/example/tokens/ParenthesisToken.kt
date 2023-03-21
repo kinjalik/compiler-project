@@ -1,6 +1,6 @@
 package org.example.tokens
 
-data class ParenthesisTokens(
+data class ParenthesisToken(
     val type: ParenthesisType
 ) : Token() {
     override fun toString(): String = type.tokenName
