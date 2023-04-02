@@ -13,7 +13,7 @@ class AtomTreeNode : TreeNode() {
             tk = tokenIter.next()
         if (tk !is AtomToken)
             throw TreeBuildException(String.format("Unexpected token while parsing Element: %s",
-                                                   tk.javaClass.kotlin.simpleName))
+                tk.javaClass.kotlin.simpleName))
 
         value = tk.value
         return this
@@ -22,5 +22,9 @@ class AtomTreeNode : TreeNode() {
     override fun print(depth: Int) {
         print(String.format("%s- Atom \"%s\"\n", " ".repeat(PRINT_INTENT * depth), value))
         super.print(depth + 1)
+    }
+
+    public fun getValue(): String {
+        return value
     }
 }
