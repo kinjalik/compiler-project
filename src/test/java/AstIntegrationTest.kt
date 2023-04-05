@@ -1,4 +1,5 @@
 import org.example.Semantic.SemanticAnalyzer
+import org.example.ast.ProgramTreeNode
 import org.example.ast.buildAst
 import org.example.tokens.Scanner
 import org.junit.jupiter.params.ParameterizedTest
