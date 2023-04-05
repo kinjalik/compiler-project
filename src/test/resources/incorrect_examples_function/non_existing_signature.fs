@@ -15,5 +15,5 @@
 ) )
 
 ( prog (
-    ( return ( palindrom ( read 0 ) ) )
+    ( return ( palindrom 121 read ) )
 ) )
