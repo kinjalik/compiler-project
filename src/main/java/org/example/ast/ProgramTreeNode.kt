@@ -1,11 +1,26 @@
 package org.example.ast
 
 import org.example.tokens.Token
+import java.lang.Exception
 
 class ProgramTreeNode : TreeNode() {
     override fun parse(token: Token, tokenIter: Iterator<Token>): TreeNode {
-        while (tokenIter.hasNext()) {
-            childNodes += ElementTreeNode().parse(token, tokenIter)
+        var flag = false
+        try {
+            while (tokenIter.hasNext()) {
+                if (!flag) {
+                    val temp = ElementTreeNode().parse(token, tokenIter)
+                    if (temp.childNodes.isEmpty()) continue
+                    childNodes += temp
+                    flag = true
+                } else {
+                    val temp = ElementTreeNode().parse(tokenIter.next(), tokenIter)
+                    if (temp.childNodes.isEmpty()) continue
+                    childNodes += temp
+                }
+            }
+        } catch(e: Exception) {
+            return this
         }
 
         return this
