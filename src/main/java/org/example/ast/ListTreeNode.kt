@@ -16,7 +16,8 @@ class ListTreeNode : TreeNode() {
             if (tk is ParenthesisToken && tk.type == ParenthesisType.RIGHT) {
                 break
             } else {
-                childNodes += ElementTreeNode().parse(tk, tokenIter)
+                val temp = ElementTreeNode().parse(tk, tokenIter)
+                childNodes += temp
             }
         }
         return this
