@@ -129,3 +129,8 @@ gradle-app.setting
 *.hprof
 
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,macos,windows,linux
+src/test/nodejs/bytecode
+.idea/
+gradle/
+src/test/nodejs/node_modules/
+src/test/nodejs/package-lock.json
