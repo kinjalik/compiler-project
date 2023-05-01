@@ -28,7 +28,7 @@ object SpecialForm {
     }
 
     private fun __cond(treeNode: TreeNode, context: Context, opcodeList: OpcodeList) {
-        CodeGenerator.process_call(treeNode.childNodes[1], context, opcodeList)
+        CodeGenerator.processCall(treeNode.childNodes[1], context, opcodeList)
         opcodeList.add("PUSH")
         val jumpFromCheckToTrue = opcodeList.size() - 1
         opcodeList.add("JUMPI")
@@ -38,7 +38,7 @@ object SpecialForm {
         opcodeList.add("JUMPDEST")
         var blockId = opcodeList.list.last().id
         opcodeList.list[jumpFromCheckToTrue].__extraValue = Utils.decToHex(blockId, 2 * address_length)
-        CodeGenerator.process_call(treeNode.childNodes[2], context, opcodeList)
+        CodeGenerator.processCall(treeNode.childNodes[2], context, opcodeList)
         opcodeList.add("PUSH")
         val jumpFromTrueToEnd = opcodeList.size() - 1
         opcodeList.add("JUMP")
@@ -46,7 +46,7 @@ object SpecialForm {
         blockId = opcodeList.list.last().id
         opcodeList.list[jumpFromCheckToFalse].__extraValue = Utils.decToHex(blockId, 2 * address_length)
         if (treeNode.childNodes.size == 4) {
-            CodeGenerator.process_call(treeNode.childNodes[3], context, opcodeList)
+            CodeGenerator.processCall(treeNode.childNodes[3], context, opcodeList)
         }
         opcodeList.add("PUSH")
         val jumpFromFalseToEnd = opcodeList.size() - 1
@@ -62,7 +62,7 @@ object SpecialForm {
         while_count += 1
         opcodeList.add("JUMPDEST", Utils.decToHex(current_while_id, 2 * address_length))
         val jumpdestToConditionCheckId = Utils.decToHex(opcodeList.list.last().id, 2 * address_length)
-        CodeGenerator.process_call(treeNode.childNodes[1], context, opcodeList)
+        CodeGenerator.processCall(treeNode.childNodes[1], context, opcodeList)
         opcodeList.add("PUSH")
         val jumpToWhileTreeNode = opcodeList.size() - 1
         opcodeList.add("JUMPI")
@@ -72,7 +72,7 @@ object SpecialForm {
 
         opcodeList.add("JUMPDEST")
         opcodeList.list[jumpToWhileTreeNode].__extraValue = Utils.decToHex(opcodeList.list.last().id, 2 * address_length)
-        CodeGenerator.process_call(treeNode.childNodes[2], context, opcodeList)
+        CodeGenerator.processCall(treeNode.childNodes[2], context, opcodeList)
         opcodeList.add("PUSH", jumpdestToConditionCheckId)
         opcodeList.add("JUMP")
         opcodeList.add("JUMPDEST")
@@ -88,7 +88,7 @@ object SpecialForm {
             }
         }
 
-        BuiltIns.current_while = prev_while
+//        BuiltIns.current_while = prev_while
     }
     private fun __break(treeNode: TreeNode, context: Context, opcodeList: OpcodeList) {
         opcodeList.add("PUSH", Utils.decToHex(0, 2 * address_length))
