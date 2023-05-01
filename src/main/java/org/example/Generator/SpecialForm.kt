@@ -17,6 +17,10 @@ object SpecialForm {
         this.address_length = address_length
     }
 
+    fun has(name: String): Boolean{
+        return specialForm.contains(name)
+    }
+
     private fun __cond(treeNode: TreeNode, context: Context, opcodeList: OpcodeList) {
         CodeGenerator.process_call(treeNode.childNodes[1], context, opcodeList)
         opcodeList.add("PUSH")
