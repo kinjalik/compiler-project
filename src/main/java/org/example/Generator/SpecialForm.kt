@@ -17,6 +17,8 @@ object SpecialForm {
     private var address_length: Int = 0
     fun init(address_length: Int) {
         this.address_length = address_length
+        this.current_while_id = 0
+        this.while_count = 0
     }
 
     fun has(name: String): Boolean{

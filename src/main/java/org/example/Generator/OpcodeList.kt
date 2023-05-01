@@ -1,6 +1,5 @@
 package org.example.Generator
 
-import jdk.internal.icu.impl.Utility.hex
 import org.example.Utils.Utils
 
 object CounterOpcode{
@@ -42,10 +41,13 @@ class Opcode(
     }
 
     fun get_str(): String{
-        val a: String? = __instructionSet?.get(__name)
-        var b: String? = null
-        if (__name == "PUSH") {
-            b = __extraValue
+        var a: String = ""
+        if (__instructionSet?.get(__name) != null) {
+            a = __instructionSet?.get(__name)!!
+        }
+        var b: String = ""
+        if (__name == "PUSH" && __extraValue != null) {
+            b = __extraValue as String
         }
 
         return a + b
@@ -65,7 +67,7 @@ class OpcodeList
     fun get_str(): String {
         var res = ""
         for (oc in list) {
-            res += oc.get_str()
+            res += oc.get_str() + "\n"
         }
         return res
     }

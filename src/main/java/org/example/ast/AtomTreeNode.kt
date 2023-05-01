@@ -5,8 +5,8 @@ import org.example.tokens.AtomToken
 import org.example.tokens.PhantomToken
 import org.example.tokens.Token
 
-class AtomTreeNode : AccessibleTreeNode<String>() {
-    override var value: String = ""
+class AtomTreeNode : TreeNode() {
+    private var value: String = ""
     override fun parse(token: Token, tokenIter: Iterator<Token>): TreeNode {
         var tk = token
         while (tk is PhantomToken)
@@ -22,5 +22,9 @@ class AtomTreeNode : AccessibleTreeNode<String>() {
     override fun print(depth: Int) {
         print(String.format("%s- Atom \"%s\"\n", " ".repeat(PRINT_INTENT * depth), value))
         super.print(depth + 1)
+    }
+
+    fun getValue(): String {
+        return value
     }
 }

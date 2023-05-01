@@ -3,7 +3,6 @@ package org.example.Functions
 import org.example.Generator.Context
 import org.example.Generator.OpcodeList
 import org.example.Utils.Utils
-import org.example.ast.AccessibleTreeNode
 import org.example.ast.AtomTreeNode
 import org.example.ast.TreeNode
 
@@ -22,7 +21,7 @@ object UserDefined:FunctionTranslator<Int>() {
         opcodeList.add("PUSH")
         val backAddr = opcodeList.size() - 1
         opcodeList.add("PUSH",
-            functions[(treeNode.childNodes[0] as AccessibleTreeNode<*>).getValue()]?.let { Utils.decToHex(it, 2 * addressLen) })
+            functions[(treeNode.childNodes[0] as AtomTreeNode).getValue()]?.let { Utils.decToHex(it, 2 * addressLen) })
         opcodeList.add("JUMP")
 
         opcodeList.add("JUMPDEST")
