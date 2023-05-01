@@ -82,30 +82,31 @@ object CodeGenerator {
     fun processCall(callBody: TreeNode, ctx: Context, opcodes: OpcodeList) {
         when (callBody) {
             is LiteralTreeNode -> return processLiteral(callBody, opcodes)
-            is AtomTreeNode -> {
-                return processAtom(callBody, ctx, opcodes)
-            }
-            is ListTreeNode -> return processCodeBlock(callBody, ctx, opcodes)
-            else -> {
-                val name = (callBody.childNodes[0] as AtomTreeNode).getValue()
-
-                if (SpecialForm.has(name)) {
-                    return SpecialForm.call(callBody, ctx, opcodes)
-                }
-
-                for (i in 1 until callBody.childNodes.size) {
-                    processCall(callBody.childNodes[i], ctx, opcodes)
-                }
-
-                if (BuiltIns.has(name)) {
-                    return BuiltIns.call(callBody, ctx, opcodes)
-                }
-
-                if (UserDefined.has(name)) {
-                    return UserDefined.call(callBody, ctx, opcodes)
+            is AtomTreeNode -> return processAtom(callBody, ctx, opcodes)
+            is ListTreeNode -> {
+                if (callBody.childNodes[0] is ListTreeNode) {
+                    return processCodeBlock(callBody, ctx, opcodes)
                 }
             }
         }
+        val name = (callBody.childNodes[0] as AtomTreeNode).getValue()
+
+        if (SpecialForm.has(name)) {
+            return SpecialForm.call(callBody, ctx, opcodes)
+        }
+
+        for (i in 1 until callBody.childNodes.size) {
+            processCall(callBody.childNodes[i], ctx, opcodes)
+        }
+
+        if (BuiltIns.has(name)) {
+            return BuiltIns.call(callBody, ctx, opcodes)
+        }
+
+        if (UserDefined.has(name)) {
+            return UserDefined.call(callBody, ctx, opcodes)
+        }
+
     }
 
     fun processLiteral(callBody: TreeNode, opcodes: OpcodeList) {
