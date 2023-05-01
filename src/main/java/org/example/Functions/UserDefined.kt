@@ -8,7 +8,7 @@ import org.example.ast.TreeNode
 
 object UserDefined:FunctionTranslator<Int>() {
     override var functions: Map<String, Int> = mapOf()
-    var serviceFrameAtoms = 0
+    private var serviceFrameAtoms = 0
 
     fun setServiceFrames(serviceFrames: Int){
         serviceFrameAtoms = serviceFrames

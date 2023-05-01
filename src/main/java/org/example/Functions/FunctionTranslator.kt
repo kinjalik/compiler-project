@@ -7,7 +7,7 @@ import org.example.ast.TreeNode
 
 
 abstract class FunctionTranslator<T> {
-    var addressLen = 1
+    private var addressLen = 1
     abstract var functions: Map<String, T>
 
     fun has(name: String): Boolean{

@@ -1,6 +1,8 @@
 package org.example.Generator
+import org.example.Functions.BuiltIns
 import org.example.ast.TreeNode
 import org.example.Utils.Utils
+import org.example.ast.AtomTreeNode
 
 object SpecialForm {
     private val specialForm: Map<String,
@@ -19,6 +21,10 @@ object SpecialForm {
 
     fun has(name: String): Boolean{
         return specialForm.contains(name)
+    }
+
+    fun call(treeNode: TreeNode, context: Context, opcodeList: OpcodeList){
+        specialForm[(treeNode.childNodes[0] as AtomTreeNode).getValue()]?.let { it(treeNode, context, opcodeList) }
     }
 
     private fun __cond(treeNode: TreeNode, context: Context, opcodeList: OpcodeList) {
