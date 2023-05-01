@@ -100,18 +100,32 @@ object BuiltIns {
     }
 
     private fun __read(treeNode: TreeNode, context: Context, opcodeList: OpcodeList) {
-        //TODO need memory
-        print("hi")
+        opcodeList.add("PUSH", Utils.decToHex(0x20, 2 * addressLen))
+        opcodeList.add("MUL")
+
+        opcodeList.add("CALLDATALOAD")
     }
 
     private fun __setq(treeNode: TreeNode, context: Context, opcodeList: OpcodeList) {
         //TODO need memory
-        print("hi")
+        val atomName = (treeNode.childNodes[1] as AtomTreeNode).getValue()
+        val address = context.getAtomAddress(atomName)
+        VirtualStackHelper.storeAtomValue(opcodeList, address)
     }
 
     private fun __return(treeNode: TreeNode, context: Context, opcodeList: OpcodeList) {
         //TODO need memory
-        print("hi")
+        if(context.is_prog){
+            opcodeList.add("PUSH", Utils.decToHex(0, 2 * addressLen))
+            opcodeList.add("MSTORE")
+            opcodeList.add("PUSH", Utils.decToHex(32, 2 * addressLen))
+            opcodeList.add("PUSH", Utils.decToHex(0, 2 * addressLen))
+            opcodeList.add("RETURN")
+            return
+        }
+        VirtualStackHelper.loadBackAddress(opcodeList)
+        VirtualStackHelper.removeFrame(opcodeList)
+        opcodeList.add("JUMP")
     }
 }
 
