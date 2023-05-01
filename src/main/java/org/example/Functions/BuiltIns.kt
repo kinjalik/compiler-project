@@ -8,8 +8,8 @@ import org.example.ast.AtomTreeNode
 
 object BuiltIns: FunctionTranslator<(TreeNode, Context, OpcodeList) -> Unit>() {
 
-    override var functions: Map<String,
-                (TreeNode, Context, OpcodeList) -> Unit> = mapOf(
+    override var functions: MutableMap<String,
+                (TreeNode, Context, OpcodeList) -> Unit> = mutableMapOf(
         "plus" to BuiltIns::__plus,
         "minus" to BuiltIns::__minus,
         "times" to BuiltIns::__times,
