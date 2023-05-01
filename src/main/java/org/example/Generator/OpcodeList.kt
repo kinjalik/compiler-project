@@ -1,6 +1,7 @@
 package org.example.Generator
 
 import jdk.internal.icu.impl.Utility.hex
+import org.example.Utils.Utils
 
 object CounterOpcode{
     private var counter = 0
@@ -14,26 +15,24 @@ object CounterOpcode{
     }
 }
 
-fun decToHex(number: Int, pad: Int): String {
-    return String.format("0x%${pad}X", number).substring(2)
-}
+
 class Opcode(
     name: String,
     addressLength: Int,
     extraValue: String? = null,
     instructionSet: Map<String, String>? = null
 ) {
-    private var id = 0
-    private var __name = name
-    private var __extraValue: String? = null
-    private var __instructionSet: Map<String, String>? = instructionSet
+    var id = 0
+    var __name = name
+    var __extraValue: String? = null
+    var __instructionSet: Map<String, String>? = instructionSet
 
     init {
         id = CounterOpcode.count()
         if (extraValue != null) {
             __extraValue = extraValue
         } else if (name == "PUSH") {
-            __extraValue = decToHex(0, 2 * addressLength)
+            __extraValue = Utils.decToHex(0, 2 * addressLength)
         } else {
             __extraValue = null
         }
@@ -57,7 +56,7 @@ class OpcodeList
 
     private var opcodeList: Map<String, String> = mapOf()
     private var extraValue: String? = null
-    private var list = ArrayList<Opcode>()
+    var list = ArrayList<Opcode>()
 
     fun add(name: String, extraValue: String? = null) {
         list.add(Opcode(name, addressLength, extraValue, opcodeList))
@@ -69,6 +68,10 @@ class OpcodeList
             res += oc.get_str()
         }
         return res
+    }
+
+    fun size(): Int {
+        return list.size
     }
 
     init {
