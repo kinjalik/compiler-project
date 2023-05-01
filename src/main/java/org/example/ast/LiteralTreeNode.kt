@@ -24,4 +24,9 @@ class LiteralTreeNode : TreeNode() {
         print(String.format("%s- Literal \"%d\"\n", " ".repeat(PRINT_INTENT * depth), value))
         super.print(depth + 1)
     }
+
+    fun getValue(): Int{
+        return value
+    }
+
 }
