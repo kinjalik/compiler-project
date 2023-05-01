@@ -26,7 +26,7 @@ object BuiltIns: FunctionTranslator<(TreeNode, Context, OpcodeList) -> Unit>() {
         "read" to BuiltIns::__read,
 
         "setq" to BuiltIns::__setq,
-        "retrun" to BuiltIns::__return,
+        "return" to BuiltIns::__return,
         "read" to BuiltIns::__read
     )
     override fun call(treeNode: TreeNode, context: Context, opcodeList: OpcodeList){
