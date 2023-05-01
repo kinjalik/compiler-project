@@ -1,46 +1,36 @@
-package org.example.builtins
-import org.example.Generator.CodeGenerator
+package org.example.Functions
 import org.example.Generator.Context
 import org.example.Generator.OpcodeList
+import org.example.Memory.VirtualStackHelper
 import org.example.ast.TreeNode
 import org.example.Utils.Utils
 import org.example.ast.AtomTreeNode
 
-object BuiltIns {
+object BuiltIns: FunctionTranslator<(TreeNode, Context, OpcodeList) -> Unit>() {
 
-    var addressLen = 1;
-    private val functions: Map<String,
+    override var functions: Map<String,
                 (TreeNode, Context, OpcodeList) -> Unit> = mapOf(
-        "plus" to ::__plus,
-        "minus" to ::__minus,
-        "times" to ::__times,
-        "divide" to ::__divide,
-        "equal" to ::__equal,
-        "nonequal" to ::__nonequal,
-        "less" to ::__less,
-        "lesseq" to ::__lesseq,
-        "greater" to ::__greater,
-        "greatereq" to ::__greatereq,
-        "and" to ::__and,
-        "or" to ::__or,
-        "not" to ::__not,
-        "read" to ::__read,
+        "plus" to BuiltIns::__plus,
+        "minus" to BuiltIns::__minus,
+        "times" to BuiltIns::__times,
+        "divide" to BuiltIns::__divide,
+        "equal" to BuiltIns::__equal,
+        "nonequal" to BuiltIns::__nonequal,
+        "less" to BuiltIns::__less,
+        "lesseq" to BuiltIns::__lesseq,
+        "greater" to BuiltIns::__greater,
+        "greatereq" to BuiltIns::__greatereq,
+        "and" to BuiltIns::__and,
+        "or" to BuiltIns::__or,
+        "not" to BuiltIns::__not,
+        "read" to BuiltIns::__read,
 
-        "setq" to ::__setq,
-        "retrun" to ::__return,
-        "read" to ::__read
+        "setq" to BuiltIns::__setq,
+        "retrun" to BuiltIns::__return,
+        "read" to BuiltIns::__read
     )
-
-    fun has(name: String): Boolean {
-        return functions.contains(name)
-    }
-
-    fun call(treeNode: TreeNode, context: Context, opcodeList: OpcodeList){
+    override fun call(treeNode: TreeNode, context: Context, opcodeList: OpcodeList){
         functions[(treeNode.childNodes[0] as AtomTreeNode).getValue()]?.let { it(treeNode, context, opcodeList) }
-    }
-
-    fun setAddrLen(addrLen: Int){
-        addressLen = addrLen
     }
 
     private fun __plus(treeNode: TreeNode, context: Context, opcodeList: OpcodeList) {
@@ -107,15 +97,13 @@ object BuiltIns {
     }
 
     private fun __setq(treeNode: TreeNode, context: Context, opcodeList: OpcodeList) {
-        //TODO need memory
         val atomName = (treeNode.childNodes[1] as AtomTreeNode).getValue()
-        val address = context.getAtomAddress(atomName)
-        VirtualStackHelper.storeAtomValue(opcodeList, address)
+        val address = context.getAtomAddr(atomName)
+        VirtualStackHelper.storeAtomValue(opcodeList, address.first)
     }
 
     private fun __return(treeNode: TreeNode, context: Context, opcodeList: OpcodeList) {
-        //TODO need memory
-        if(context.is_prog){
+        if(context.isProg){
             opcodeList.add("PUSH", Utils.decToHex(0, 2 * addressLen))
             opcodeList.add("MSTORE")
             opcodeList.add("PUSH", Utils.decToHex(32, 2 * addressLen))
@@ -123,6 +111,7 @@ object BuiltIns {
             opcodeList.add("RETURN")
             return
         }
+
         VirtualStackHelper.loadBackAddress(opcodeList)
         VirtualStackHelper.removeFrame(opcodeList)
         opcodeList.add("JUMP")
