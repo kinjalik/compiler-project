@@ -1,12 +1,10 @@
 package org.example.Generator
 import org.example.ast.TreeNode
-import org.example.Generator.Context
-import org.example.Generator.CodeGenerator
 import org.example.Utils.Utils
 
 object SpecialForm {
     private val specialForm: Map<String,
-                (TreeNode, Context, OpcodeList, CodeGenerator) -> Unit> = mapOf(
+                (TreeNode, Context, OpcodeList) -> Unit> = mapOf(
                     "cond" to ::__cond,
                     "while" to ::__while,
                     "break" to ::__break,
@@ -19,56 +17,56 @@ object SpecialForm {
         this.address_length = address_length
     }
 
-    private fun __cond(treeNode: TreeNode, context: Context, opcodeList: OpcodeList, codeGenerator: CodeGenerator) {
-        codeGenerator.process_call(treeNode.childNodes[1], context, opcodeList)
+    private fun __cond(treeNode: TreeNode, context: Context, opcodeList: OpcodeList) {
+        CodeGenerator.process_call(treeNode.childNodes[1], context, opcodeList)
         opcodeList.add("PUSH")
-        val jump_from_check_to_true = opcodeList.size() - 1
+        val jumpFromCheckToTrue = opcodeList.size() - 1
         opcodeList.add("JUMPI")
         opcodeList.add("PUSH")
-        val jump_from_check_to_false = opcodeList.size() - 1
+        val jumpFromCheckToFalse = opcodeList.size() - 1
         opcodeList.add("JUMP")
         opcodeList.add("JUMPDEST")
-        var block_id = opcodeList.list.last().id
-        opcodeList.list[jump_from_check_to_true].__extraValue = Utils.decToHex(block_id, 2 * address_length)
-        codeGenerator.process_call(treeNode.childNodes[2], context, opcodeList)
+        var blockId = opcodeList.list.last().id
+        opcodeList.list[jumpFromCheckToTrue].__extraValue = Utils.decToHex(blockId, 2 * address_length)
+        CodeGenerator.process_call(treeNode.childNodes[2], context, opcodeList)
         opcodeList.add("PUSH")
-        val jump_from_true_to_end = opcodeList.size() - 1
+        val jumpFromTrueToEnd = opcodeList.size() - 1
         opcodeList.add("JUMP")
         opcodeList.add("JUMPDEST")
-        block_id = opcodeList.list.last().id
-        opcodeList.list[jump_from_check_to_false].__extraValue = Utils.decToHex(block_id, 2 * address_length)
+        blockId = opcodeList.list.last().id
+        opcodeList.list[jumpFromCheckToFalse].__extraValue = Utils.decToHex(blockId, 2 * address_length)
         if (treeNode.childNodes.size == 4) {
-            codeGenerator.process_call(treeNode.childNodes[3], context, opcodeList)
+            CodeGenerator.process_call(treeNode.childNodes[3], context, opcodeList)
         }
         opcodeList.add("PUSH")
-        val jump_from_false_to_end = opcodeList.size() - 1
+        val jumpFromFalseToEnd = opcodeList.size() - 1
         opcodeList.add("JUMP")
         opcodeList.add("JUMPDEST")
-        block_id = opcodeList.list.last().id
-        opcodeList.list[jump_from_true_to_end].__extraValue = Utils.decToHex(block_id, 2 * address_length)
-        opcodeList.list[jump_from_false_to_end].__extraValue = Utils.decToHex(block_id, 2 * address_length)
+        blockId = opcodeList.list.last().id
+        opcodeList.list[jumpFromTrueToEnd].__extraValue = Utils.decToHex(blockId, 2 * address_length)
+        opcodeList.list[jumpFromFalseToEnd].__extraValue = Utils.decToHex(blockId, 2 * address_length)
     }
-    private fun __while(treeNode: TreeNode, context: Context, opcodeList: OpcodeList, codeGenerator: CodeGenerator) {
+    private fun __while(treeNode: TreeNode, context: Context, opcodeList: OpcodeList) {
         val prev_while = current_while_id
         current_while_id = while_count
         while_count += 1
         opcodeList.add("JUMPDEST", Utils.decToHex(current_while_id, 2 * address_length))
-        val jumpdest_to_condition_check_id = Utils.decToHex(opcodeList.list.last().id, 2 * address_length)
-        codeGenerator.process_call(treeNode.childNodes[1], context, opcodeList)
+        val jumpdestToConditionCheckId = Utils.decToHex(opcodeList.list.last().id, 2 * address_length)
+        CodeGenerator.process_call(treeNode.childNodes[1], context, opcodeList)
         opcodeList.add("PUSH")
-        val jump_to_while_treeNode = opcodeList.size() - 1
+        val jumpToWhileTreeNode = opcodeList.size() - 1
         opcodeList.add("JUMPI")
         opcodeList.add("PUSH")
-        val jump_to_while_end = opcodeList.size() - 1
+        val jumpToWhileEnd = opcodeList.size() - 1
         opcodeList.add("JUMP")
 
         opcodeList.add("JUMPDEST")
-        opcodeList.list[jump_to_while_treeNode].__extraValue = Utils.decToHex(opcodeList.list.last().id, 2 * address_length)
-        codeGenerator.process_call(treeNode.childNodes[2], context, opcodeList)
-        opcodeList.add("PUSH", jumpdest_to_condition_check_id)
+        opcodeList.list[jumpToWhileTreeNode].__extraValue = Utils.decToHex(opcodeList.list.last().id, 2 * address_length)
+        CodeGenerator.process_call(treeNode.childNodes[2], context, opcodeList)
+        opcodeList.add("PUSH", jumpdestToConditionCheckId)
         opcodeList.add("JUMP")
         opcodeList.add("JUMPDEST")
-        opcodeList.list[jump_to_while_end].__extraValue = Utils.decToHex(opcodeList.list.last().id, 2 * address_length)
+        opcodeList.list[jumpToWhileEnd].__extraValue = Utils.decToHex(opcodeList.list.last().id, 2 * address_length)
 
         for (i in 0 until opcodeList.size()) {
             if (opcodeList.list[i].__name == "JUMP" && opcodeList.list[i].__extraValue == Utils.decToHex(
@@ -82,7 +80,7 @@ object SpecialForm {
 
         BuiltIns.current_while = prev_while
     }
-    private fun __break(treeNode: TreeNode, context: Context, opcodeList: OpcodeList, codeGenerator: CodeGenerator) {
+    private fun __break(treeNode: TreeNode, context: Context, opcodeList: OpcodeList) {
         opcodeList.add("PUSH", Utils.decToHex(0, 2 * address_length))
         opcodeList.add("JUMP", Utils.decToHex(current_while_id, 2 * address_length))
     }
