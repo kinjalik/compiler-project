@@ -18,7 +18,7 @@ const main = async () => {
 
     let code = ""
     try {
-        code = fs.readFileSync('prog.fs', 'utf8');
+        code = fs.readFileSync('bytecode', 'utf8');
     } catch (err) {
         console.error(err);
     }
@@ -31,9 +31,11 @@ const main = async () => {
         .runCode({
             code: Buffer.from(code, 'hex'),
             gasLimit: BigInt(0xffff),
+
         })
         .then((results) => {
-            console.log(`Returned: ${results.returnValue.toString('hex')}`)
+            console.log(`Returned in HEX: ${results.returnValue.toString('hex')}`)
+            console.log(`Returned in DEC: ${parseInt(results.returnValue.toString('hex'), 16).toString()}`)
             console.log(`gasUsed: ${results.executionGasUsed.toString()}`)
         })
         .catch(console.error)

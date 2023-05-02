@@ -24,5 +24,5 @@ fun main(args: Array<String>) {
     CodeGenerator.init(ast)
     CodeGenerator.run()
 
-    File("src/test/nodejs/prog.fs").writeText(CodeGenerator.getStr())
+    File("src/test/nodejs/bytecode").writeText(CodeGenerator.getStr())
 }
