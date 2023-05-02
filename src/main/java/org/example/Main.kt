@@ -3,6 +3,7 @@ import org.example.Generator.CounterOpcode
 import org.example.Semantic.SemanticAnalyzer
 import org.example.ast.buildAst
 import org.example.tokens.Scanner
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -23,5 +24,5 @@ fun main(args: Array<String>) {
     CodeGenerator.init(ast)
     CodeGenerator.run()
 
-    print(CodeGenerator.getStr())
+    File("src/test/nodejs/prog.fs").writeText(CodeGenerator.getStr())
 }

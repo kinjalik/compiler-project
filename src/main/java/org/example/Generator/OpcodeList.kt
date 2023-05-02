@@ -67,7 +67,7 @@ class OpcodeList
     fun get_str(): String {
         var res = ""
         for (oc in list) {
-            res += oc.get_str() + "\n"
+            res += oc.get_str()
         }
         return res
     }
