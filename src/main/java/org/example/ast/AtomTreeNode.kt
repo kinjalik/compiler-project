@@ -24,7 +24,7 @@ class AtomTreeNode : TreeNode() {
         super.print(depth + 1)
     }
 
-    public fun getValue(): String {
+    fun getValue(): String {
         return value
     }
 }
