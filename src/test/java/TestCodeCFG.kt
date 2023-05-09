@@ -1,5 +1,5 @@
 
-import Providers.ExampleProgramArgumentProvider
+import org.example.CFG.CFG
 import org.example.Semantic.SemanticAnalyzer
 import org.example.ast.buildAst
 import org.example.tokens.Scanner
@@ -9,20 +9,37 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 
-internal class AstIntegrationTest {
+internal class TestCodeCFG {
     @ParameterizedTest
-    @ArgumentsSource(ExampleProgramArgumentProvider::class)
-    fun `ast tree building test`(filePath: String) {
+    @ArgumentsSource(ExampleProgramArgumentProviderToCompile::class)
+    fun `CFG build`(filePath: String) {
         val path = Path.of(filePath)
         val originalCode = Files.readString(path)
 
         val scanner = Scanner(originalCode)
         val ast = buildAst(scanner)
-        scanner.isOk()
 
-        ast.print()
 
         val semanticAnalyzer = SemanticAnalyzer(ast)
         semanticAnalyzer.run()
+
+        val cfg = CFG(ast)
+        cfg.run()
+
+        (0..40).forEach{ _ -> print("=") }
+        println()
+        print(originalCode)
+        println()
+//
+//        (0..40).forEach{ _ -> print("=") }
+//        println()
+//        ast.print()
+//        println()
+
+        (0..40).forEach{ _ -> print("=") }
+        println()
+        cfg.print()
+        println()
+
     }
 }

@@ -1,8 +1,7 @@
+import Providers.ExampleProgramArgumentProvider
 import org.example.Generator.CodeGenerator
 import org.example.Generator.CounterOpcode
 import org.example.Semantic.SemanticAnalyzer
-import org.example.Utils.Utils
-import org.example.ast.ProgramTreeNode
 import org.example.ast.buildAst
 import org.example.tokens.Scanner
 import org.junit.jupiter.params.ParameterizedTest

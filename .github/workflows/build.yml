@@ -1,0 +1,21 @@
+name: Build snapshot for non-master branch
+on: [push]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '19'
+          distribution: 'adopt'
+      - name: Build jar
+        run: gradle jar
+      - name: Store artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: compiler-project-snapshot
+          path: build/libs/*.jar

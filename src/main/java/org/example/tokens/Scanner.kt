@@ -1,31 +1,49 @@
 package org.example.tokens
 
-import java.util.LinkedList
-import java.util.Queue
+import org.example.exceptions.TreeBuildException
+import java.util.*
 
 class Scanner(input: String) : Iterator<Token> {
     private val inputIterator: CharIterator
-    private var currentLine = 1;
-    private var currentCol = 1;
+    private var currentLine = 1
+    private var currentCol = 0
+    private var balance = 0
 
-    private val separators = setOf(' ', '\n', '\t')
+    private val separators = setOf(' ', '\n', '\t', '\r')
     private val digits = '0'..'9'
     private val specialCharacters = setOf('(', ')')
     init {
         inputIterator = input.iterator()
     }
 
+    fun getCurrentLine(): Int {
+        return currentLine
+    }
+
+    fun getCurrentCol(): Int {
+        return currentCol
+    }
     override fun hasNext() = inputIterator.hasNext()
     override fun next(): Token {
         var curChar = getNextChar() ?: throw NoSuchElementException()
 
-        return when (curChar) {
+        val token = when (curChar) {
             in separators -> PhantomToken(curChar)
-            '(' -> ParenthesisToken(ParenthesisType.LEFT)
-            ')' -> ParenthesisToken(ParenthesisType.RIGHT)
+            '(' -> {
+                balance += 1
+                ParenthesisToken(ParenthesisType.LEFT)
+            }
+            ')' -> {
+                balance -= 1
+                ParenthesisToken(ParenthesisType.RIGHT)
+            }
             in digits -> readDigit(curChar)
             else -> readAtom(curChar)
         }
+        if (balance < 0) {
+            throw TreeBuildException(currentLine, currentCol, ")")
+        }
+        return token
     }
 
     private fun readDigit(firstChar: Char): Token {
@@ -62,8 +80,11 @@ class Scanner(input: String) : Iterator<Token> {
     private val charQueue: Queue<Char> = LinkedList()
     private fun hasNextChar(): Boolean = charQueue.isNotEmpty() || inputIterator.hasNext()
     private fun getNextChar(): Char? {
-        val res = if (charQueue.isNotEmpty())
+        var flag = true
+        val res = if (charQueue.isNotEmpty()) {
+            flag = false
             charQueue.poll()
+        }
         else if (inputIterator.hasNext())
             inputIterator.nextChar()
         else
@@ -71,9 +92,17 @@ class Scanner(input: String) : Iterator<Token> {
 
         if (res == '\n') {
             currentLine++
-            currentCol = 1
+            currentCol = 0
+        } else if (res != null && flag){
+            currentCol++
         }
         return res
     }
     private fun putCharToQueue(ch: Char) = charQueue.add(ch)
+
+    fun isOk() {
+        if (balance > 0) {
+            throw TreeBuildException(currentLine, currentCol, "(")
+        }
+    }
 }

@@ -1,14 +1,10 @@
 package org.example.ast
 
 import org.example.exceptions.TreeBuildException
-import org.example.tokens.AtomToken
-import org.example.tokens.DigitToken
-import org.example.tokens.ParenthesisToken
-import org.example.tokens.PhantomToken
-import org.example.tokens.Token
+import org.example.tokens.*
 
 class ElementTreeNode : TreeNode() {
-    override fun parse(token: Token, tokenIter: Iterator<Token>): TreeNode {
+    override fun parse(token: Token, tokenIter: Scanner): TreeNode {
         var nextTk = token
         while (nextTk is PhantomToken)
             nextTk = tokenIter.next()
@@ -18,8 +14,9 @@ class ElementTreeNode : TreeNode() {
             is DigitToken -> LiteralTreeNode().parse(nextTk, tokenIter)
             is ParenthesisToken -> ListTreeNode().parse(nextTk, tokenIter)
             else -> throw TreeBuildException(
-                String.format("Unexpected token while parsing Element: %s", nextTk.javaClass.kotlin.simpleName)
-            )
+                tokenIter.getCurrentLine(),
+                tokenIter.getCurrentCol(),
+                nextTk.toString())
         }
         return childNode
     }

@@ -1,12 +1,9 @@
 package org.example.ast
 
-import org.example.tokens.ParenthesisToken
-import org.example.tokens.ParenthesisType
-import org.example.tokens.PhantomToken
-import org.example.tokens.Token
+import org.example.tokens.*
 
 class ListTreeNode : TreeNode() {
-    override fun parse(token: Token, tokenIter: Iterator<Token>): TreeNode {
+    override fun parse(token: Token, tokenIter: Scanner): TreeNode {
         assert(token is ParenthesisToken)
         while (tokenIter.hasNext()) {
             val tk = tokenIter.next()

@@ -1,8 +1,8 @@
+
+import org.example.Semantic.SemanticAnalyzer
 import org.example.ast.TreeNode
 import org.example.ast.buildAst
-import org.example.Semantic.SemanticAnalyzer
 import org.example.tokens.Scanner
-import java.lang.Exception
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
@@ -27,6 +27,7 @@ internal class IncorrectSampleTest {
         val originalCode = this::class.java.getResource(filePath).readText().replace('\r', ' ')
 
         val scanner = Scanner(originalCode)
+        scanner.isOk()
 
         return buildAst(scanner)
     }
