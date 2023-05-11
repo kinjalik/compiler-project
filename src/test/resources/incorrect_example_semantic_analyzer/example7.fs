@@ -1,0 +1,1 @@
+(prog((a 1 setq)(return 0)))
