@@ -1,8 +1,8 @@
+import Providers.ExampleProgramArgumentProvider;
 import org.example.tokens.Scanner;
 import org.example.tokens.Token;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 

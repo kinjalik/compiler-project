@@ -1,10 +1,13 @@
 package org.example.ast
 
+import org.example.exceptions.ByteBaseOverflowException
+import org.example.exceptions.SemanticAnalysisException
+import org.example.exceptions.TreeBuildException
+import org.example.tokens.Scanner
 import org.example.tokens.Token
-import java.lang.Exception
 
 class ProgramTreeNode : TreeNode() {
-    override fun parse(token: Token, tokenIter: Iterator<Token>): TreeNode {
+    override fun parse(token: Token, tokenIter: Scanner): TreeNode {
         var flag = false
         try {
             while (tokenIter.hasNext()) {
@@ -19,7 +22,16 @@ class ProgramTreeNode : TreeNode() {
                     childNodes += temp
                 }
             }
-        } catch(e: Exception) {
+        } catch(e: NumberFormatException) {
+            throw Exception("Big number");
+        } catch(e: SemanticAnalysisException) {
+            throw e
+        } catch(e: TreeBuildException) {
+            throw e
+        } catch(e: ByteBaseOverflowException) {
+            throw e
+        }
+        catch(e: Exception) {
             return this
         }
 

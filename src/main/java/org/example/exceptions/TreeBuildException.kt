@@ -1,5 +1,9 @@
 package org.example.exceptions
 
 class TreeBuildException(
-    private val msg: String
-) : Exception(msg)
+    line: Int,
+    col: Int,
+    elem: String
+) :
+    Exception(String.format("Unknown token on line %d:%d: while parsing element: %s",
+        line, col, elem))

@@ -6,4 +6,4 @@
   )
 )
 
-( prog ( ( return ( sum 10 ) ) ) )
+( prog ( ( return ( sum  ( read 0 ) ) ) ) )

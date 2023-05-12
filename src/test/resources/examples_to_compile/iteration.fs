@@ -1,6 +1,6 @@
 ( prog (
   ( setq sum 0 )
-  ( setq i 10 )
+  ( setq i ( read 0 ) )
   ( while ( nonequal i 0 ) (
     ( setq sum ( plus sum i ) )
     ( setq i ( minus i 1 ) ) )

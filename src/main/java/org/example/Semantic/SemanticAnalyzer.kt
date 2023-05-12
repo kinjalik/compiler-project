@@ -3,6 +3,8 @@ package org.example.Semantic
 import org.example.ast.AtomTreeNode
 import org.example.ast.ListTreeNode
 import org.example.ast.TreeNode
+import org.example.exceptions.SemanticAnalysisException
+import org.example.exceptions.SemanticAnalysisExceptionWithLine
 
 class SemanticAnalyzer(private var root: TreeNode) {
 
@@ -33,6 +35,7 @@ class SemanticAnalyzer(private var root: TreeNode) {
 
         "cond" to -1,
         "while" to 2,
+        "break" to 0,
     )
     private var wasReturn = false
     private var insideFunction = false
@@ -46,10 +49,18 @@ class SemanticAnalyzer(private var root: TreeNode) {
                         if (prog == null) {
                             prog = atomTreeNode
                             if (is_level != 1) {
-                                throw Exception("Unexpected token \"prog\" on the current program level")
+                                throw SemanticAnalysisExceptionWithLine(
+                                    "Unexpected token \"prog\" on the current program level",
+                                    atomTreeNode.numberLine,
+                                    atomTreeNode.numberCh
+                                )
                             }
                         } else {
-                            throw Exception("Token \"prog\" met more than once")
+                            throw SemanticAnalysisExceptionWithLine(
+                                "Multiple definitions of \"prog\" found",
+                                atomTreeNode.numberLine,
+                                atomTreeNode.numberCh
+                            )
                         }
                     }
                 }
@@ -60,11 +71,36 @@ class SemanticAnalyzer(private var root: TreeNode) {
         }
     }
 
-    public fun check_prog() {
+    fun check_prog() {
         check_prog(root)
         if (prog == null) {
-            throw Exception("Token \"prog\" not found")
+            throw SemanticAnalysisException("Token \"prog\" not found")
         }
+    }
+
+    private fun check_func(current: TreeNode) {
+        for (elem in current.childNodes) {
+            when (elem) {
+                is AtomTreeNode -> {
+                    val atomTreeNode: AtomTreeNode = elem
+                    if (atomTreeNode.getValue() == "func") {
+                        if (is_level != 1) {
+                            throw SemanticAnalysisExceptionWithLine("Nested \"func\" is not allowed",
+                                elem.numberLine,
+                                elem.numberCh)
+                        }
+                    }
+                }
+            }
+            is_level += 1
+            check_func(elem)
+            is_level -= 1
+        }
+    }
+
+    fun check_func() {
+        check_func(root)
+
     }
 
     private fun find_func(name: String, argc: Int): Boolean {
@@ -87,17 +123,22 @@ class SemanticAnalyzer(private var root: TreeNode) {
                             continue
                         }
                         count += 1
+                        if (count > 1) {
+
+                            throw SemanticAnalysisExceptionWithLine(
+                                "Multiple declarations of function \"$name\" found",
+                                atomTreeNode.numberLine,
+                                atomTreeNode.numberCh
+                            )
+                        }
                     }
                 }
             }
         }
         if (count == 0) {
             return false
-        } else if (count == 1) {
-            return true
-        } else {
-            throw Exception("Multiple declarations of function \"$name\" found")
         }
+        return true
     }
 
     private fun check_declarations(current: TreeNode) {
@@ -107,31 +148,41 @@ class SemanticAnalyzer(private var root: TreeNode) {
                     var checked: AtomTreeNode = current.childNodes[i] as AtomTreeNode
                     if (checked.getValue() == "func") {
                         if (i != 0) {
-                            throw Exception("func declaration keyword should be first in the List")
+                            throw SemanticAnalysisExceptionWithLine(
+                                "\"func\" declaration keyword should be first in the list",
+                                checked.numberLine, checked.numberCh
+                            )
                         }
 
                         if (current.childNodes.size != 4) {
-                            if (current.childNodes.size < 2) {
-                                throw Exception("Invalid function declaration found")
-                            } else if (current.childNodes[i + 1] is AtomTreeNode) {
-                                throw Exception("Invalid declaration of function \"" + (current.childNodes[i + 1] as AtomTreeNode).getValue() + "\" found")
-                            } else {
-                                throw Exception("Unknown error in function declaration, note: \n\t func <name> <List args> <List body> is the only correct form")
+                            throw SemanticAnalysisExceptionWithLine(
+                                "Unknown error in function declaration, note: func <name> <List args> <List body> is the only correct form",
+                                checked.numberLine, checked.numberCh
+                            )
+                        } else {
+                            if(!(current.childNodes[0] is AtomTreeNode) ||
+                                !(current.childNodes[1] is AtomTreeNode) ||
+                                !(current.childNodes[2] is ListTreeNode) ||
+                                !(current.childNodes[3] is ListTreeNode)) {
+                                throw SemanticAnalysisExceptionWithLine(
+                                    "Unknown error in function declaration, note: func <name> <List args> <List body> is the only correct form",
+                                    checked.numberLine, checked.numberCh
+                                )
                             }
                         }
 
                     } else if (checked.getValue() == "setq") {
                         if (i != 0) {
-                            throw Exception("Setq operation should be first in the List")
+                            throw SemanticAnalysisExceptionWithLine(
+                                "\"setq\" operation should be first in the list",
+                                checked.numberLine, checked.numberCh
+                            )
                         }
                         if (current.childNodes.size != 3) {
-                            if (current.childNodes.size < 2) {
-                                throw Exception("Invalid variable set operation")
-                            } else if (current.childNodes[i + 1] is AtomTreeNode) {
-                                throw Exception("Invalid usage of setq for variable  \"" + (current.childNodes[i + 1] as AtomTreeNode).getValue() + "\" found")
-                            } else {
-                                throw Exception("Unknown error in variable usage setq, note: \n\t setq <name> <value List/Atom/Literal> is the only correct form")
-                            }
+                                throw SemanticAnalysisExceptionWithLine(
+                                    "Unknown error in usage setq, note: setq <name> <value List/Atom/Literal> is the only correct form",
+                                    checked.numberLine, checked.numberCh
+                                )
                         }
                     }
                 }
@@ -168,6 +219,7 @@ class SemanticAnalyzer(private var root: TreeNode) {
             if (current.childNodes.size == 4) {
                 i += 3
             }
+            find_func((current.childNodes[1] as AtomTreeNode).getValue(), current.childNodes[2].childNodes.size)
             return Pair(i, is_new_stack)
         }
 
@@ -182,25 +234,28 @@ class SemanticAnalyzer(private var root: TreeNode) {
             if (atomTreeNode.getValue() == "cond" && i == 0 &&
                 (current.childNodes.size - 1 != 2 && current.childNodes.size - 1 != 3)
             ) {
-                throw Exception(
+                throw SemanticAnalysisExceptionWithLine(
                     "Call of \"cond\" requires 2 or 3 arguments " +
-                            "but ${current.childNodes.size - 1} were provided"
+                            "but ${current.childNodes.size - 1} were provided",
+                    current.numberLine, current.numberCh
                 )
             }
 
             val not_cond = atomTreeNode.getValue() != "cond"
 
             if (i == 0 && current.childNodes.size - 1 != size && not_cond) {
-                throw Exception(
+                throw SemanticAnalysisExceptionWithLine(
                     "Call of \"${atomTreeNode.getValue()}\" requires $size arguments " +
-                            "but ${current.childNodes.size - 1} were provided"
+                            "but ${current.childNodes.size - 1} were provided",
+                    atomTreeNode.numberLine, atomTreeNode.numberCh
                 )
             }
 
             if (i != 0 && not_cond) {
-                throw Exception(
+                throw SemanticAnalysisExceptionWithLine(
                     "Function \"${atomTreeNode.getValue()}\" " +
-                            "should be the first element of the list"
+                            "should be the first element of the list",
+                    atomTreeNode.numberLine, atomTreeNode.numberCh
                 )
             }
 
@@ -218,11 +273,17 @@ class SemanticAnalyzer(private var root: TreeNode) {
         code += booleanToInt(StackVar.contain(atomTreeNode.getValue()))
 
         if (code == 0) {
-            throw Exception("Object with name \"${atomTreeNode.getValue()}\" do not exist")
+            throw SemanticAnalysisExceptionWithLine(
+                "Object with name \"${atomTreeNode.getValue()}\" do not exist",
+                atomTreeNode.numberLine, atomTreeNode.numberCh
+            )
         }
 
         if (code > 1) {
-            throw Exception("Object with name \"${atomTreeNode.getValue()}\" has more than one definition")
+            throw SemanticAnalysisExceptionWithLine(
+                "Object with name \"${atomTreeNode.getValue()}\" has more than one definition",
+                atomTreeNode.numberLine, atomTreeNode.numberCh
+            )
         }
 
         return Pair(i, is_new_stack)
@@ -258,12 +319,8 @@ class SemanticAnalyzer(private var root: TreeNode) {
     }
 
     fun run() {
-        StackVar.new_stack()
-
-        check_prog(root)
-        check_declarations(root)
-        traverse_atoms(root)
-
-        StackVar.remove_last_stack()
+        check_prog()
+        traverse_atoms()
+        check_func()
     }
 }

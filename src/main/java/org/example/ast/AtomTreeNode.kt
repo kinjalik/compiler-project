@@ -3,19 +3,32 @@ package org.example.ast
 import org.example.exceptions.TreeBuildException
 import org.example.tokens.AtomToken
 import org.example.tokens.PhantomToken
+import org.example.tokens.Scanner
 import org.example.tokens.Token
 
 class AtomTreeNode : TreeNode() {
     private var value: String = ""
-    override fun parse(token: Token, tokenIter: Iterator<Token>): TreeNode {
+    val atomNameRegex = Regex("^[a-zA-Z_][a-zA-Z0-9_]*$")
+
+    override fun parse(token: Token, tokenIter: Scanner): TreeNode {
         var tk = token
         while (tk is PhantomToken)
             tk = tokenIter.next()
         if (tk !is AtomToken)
-            throw TreeBuildException(String.format("Unexpected token while parsing Element: %s",
-                tk.javaClass.kotlin.simpleName))
+            throw TreeBuildException(
+                tokenIter.getCurrentLine(),
+                tokenIter.getCurrentCol(),
+                tk.toString())
 
         value = tk.value
+        if (!value.matches(atomNameRegex)) {
+            throw
+            TreeBuildException(tokenIter.getCurrentLine(), tokenIter.getCurrentCol(), value)
+        }
+
+
+        numberLine = tokenIter.getCurrentLine()
+        numberCh = tokenIter.getCurrentCol()
         return this
     }
 

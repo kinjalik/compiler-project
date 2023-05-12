@@ -1,3 +1,5 @@
+package org.example
+
 import org.example.Generator.CodeGenerator
 import org.example.Generator.CounterOpcode
 import org.example.Semantic.SemanticAnalyzer
@@ -8,21 +10,34 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 fun main(args: Array<String>) {
-    if (args.size != 1) {
-        throw Exception("Pass the *.fs file")
+    if (args.size != 1 && args.size != 2) {
+        throw Exception("java -jar <*.jar> <*.fs> <bytecode.output> (optional)")
     }
-    val path = Path.of(args[0])
-    val originalCode = Files.readString(path)
+    try {
+        val path = Path.of(args[0])
+        val originalCode = Files.readString(path)
 
-    val scanner = Scanner(originalCode)
-    val ast = buildAst(scanner)
+        val scanner = Scanner(originalCode)
+        val ast = buildAst(scanner)
+        scanner.isOk()
 
-    val semanticAnalyzer = SemanticAnalyzer(ast)
-    semanticAnalyzer.run()
+        val semanticAnalyzer = SemanticAnalyzer(ast)
+        semanticAnalyzer.run()
 
-    CounterOpcode.reset()
-    CodeGenerator.init(ast)
-    CodeGenerator.run()
+        CounterOpcode.reset()
+        CodeGenerator.init(ast)
+        CodeGenerator.run()
 
-    File("src/test/nodejs/bytecode").writeText(CodeGenerator.getStr())
+        println("Success")
+    } catch (e: Exception) {
+        println(e.message)
+        return
+    }
+
+    val fileToWrite = if (args.size == 2) {
+        args[1]
+    } else {
+        "bytecode"
+    }
+    File(fileToWrite).writeText(CodeGenerator.getStr())
 }

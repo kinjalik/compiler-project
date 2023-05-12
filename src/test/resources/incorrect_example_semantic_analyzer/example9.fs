@@ -1,0 +1,1 @@
+(prog((cond)(return 0)))
