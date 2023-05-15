@@ -92,6 +92,7 @@ private class CFGNode(
     private var toContinue: CFGNode? = null,
     private val allFunction: ArrayList<FunctionNode> = ArrayList<FunctionNode>(),
     private val prevNode: CFGNode? = null,
+    private var isList: Boolean = false
 ) {
     private var toFalse: CFGNode? = null
     private var toTrue: CFGNode? = null
@@ -135,7 +136,7 @@ private class CFGNode(
                 return this
             }
             if (el.childNodes[0] is ListTreeNode) {
-                return CFGNode(el, 0, toContinue, allFunction=allFunction, this).run()
+                return CFGNode(el, 0, toContinue, allFunction=allFunction, prevNode, true).run()
             }
             val isIt = (el.childNodes[0] as AtomTreeNode).getValue()
             context = isIt
@@ -152,7 +153,7 @@ private class CFGNode(
 
             when (isIt) {
                 "cond" -> {
-                    toContinue = CFGNode(partNode, it + 1, toContinue,allFunction=allFunction, this).run()
+                    toContinue = CFGNode(partNode, it + 1, toContinue,allFunction=allFunction, null).run()
 
                     toTrue = CFGNode(el, 2, toContinue, allFunction=allFunction, this).run()
                     toFalse = if (el.childNodes.size > 3) {
@@ -190,11 +191,14 @@ private class CFGNode(
                     if (isIt == "setq") {
                         variableWrite = (el.childNodes[1] as AtomTreeNode).getValue()
                     }
-                    if ((prevNode?.context ?: "") != "cond") {
-                        toStraight = CFGNode(partNode, it + 1, toContinue, allFunction=allFunction, this).run()
+                    if ((prevNode?.context ?: "") != "cond" || isList) {
+                        toStraight = CFGNode(partNode, it + 1, toContinue, allFunction=allFunction, this, true).run()
                     } else {
                         toStraight = toContinue
+//                        if (toStraight?.context != "while") { unrechable
                         toStraight?.prevNodes?.add(this)
+//                        }
+
                     }
                 }
             }
