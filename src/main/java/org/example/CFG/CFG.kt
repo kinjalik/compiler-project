@@ -90,7 +90,8 @@ private class CFGNode(
     private val partNode: TreeNode,
     private val it: Int,
     private var toContinue: CFGNode? = null,
-    private val allFunction: ArrayList<FunctionNode> = ArrayList<FunctionNode>()
+    private val allFunction: ArrayList<FunctionNode> = ArrayList<FunctionNode>(),
+    private val prevNode: CFGNode? = null,
 ) {
     private var toFalse: CFGNode? = null
     private var toTrue: CFGNode? = null
@@ -98,6 +99,7 @@ private class CFGNode(
     private var variableWrite: String? = null
     private var variableRead = TreeSet<String>()
     private var callFunction = ArrayList<FunctionNode>()
+    private var prevNodes = ArrayList<CFGNode>()
 
     private var context: String = ""
 
@@ -122,14 +124,18 @@ private class CFGNode(
         }
     }
 
+
     fun run(): CFGNode? {
+        if (prevNode != null) {
+            prevNodes.add(prevNode)
+        }
         if (it < partNode.childNodes.size) {
             val el = partNode.childNodes[it]
             if (el.childNodes.isEmpty()) {
                 return this
             }
             if (el.childNodes[0] is ListTreeNode) {
-                return CFGNode(el, 0, toContinue, allFunction=allFunction).run()
+                return CFGNode(el, 0, toContinue, allFunction=allFunction, this).run()
             }
             val isIt = (el.childNodes[0] as AtomTreeNode).getValue()
             context = isIt
@@ -146,25 +152,34 @@ private class CFGNode(
 
             when (isIt) {
                 "cond" -> {
-                    toContinue = CFGNode(partNode, it + 1, toContinue,allFunction=allFunction).run()
+                    toContinue = CFGNode(partNode, it + 1, toContinue,allFunction=allFunction, this).run()
 
-                    toTrue = CFGNode(el, 2, toContinue, allFunction=allFunction).run()
+                    toTrue = CFGNode(el, 2, toContinue, allFunction=allFunction, this).run()
                     toFalse = if (el.childNodes.size > 3) {
-                        CFGNode(el, 3, toContinue,allFunction=allFunction).run()
+                        CFGNode(el, 3, toContinue,allFunction=allFunction, this).run()
                     } else {
                         toContinue
                     }
-
                 }
 
                 "while" -> {
-                    toTrue = CFGNode(el.childNodes[2], 0, this, allFunction=allFunction).run()
-                    toFalse = CFGNode(partNode, it + 1, toContinue, allFunction=allFunction).run()
-
+                    toFalse = CFGNode(partNode, it + 1, toContinue, allFunction=allFunction, this).run()
+                    toTrue = CFGNode(el.childNodes[2], 0, this, allFunction=allFunction, this).run()
                 }
 
                 "break" -> {
-                    toStraight = toContinue?.toFalse
+//                    toStraight = toContinue?.toFalse
+//                    toStraight?.prevNodes?.add(this)
+                    var temp = prevNode
+                    while (temp?.context != "while") {
+                        temp = temp?.prevNode
+                        if (temp == null) {
+                            throw Exception("break without while") // TODO kotlin warning
+                        }
+                    }
+                    toStraight = temp.toFalse
+                    toStraight?.prevNodes?.add(this)
+
                 }
 
                 "return" -> {
@@ -175,10 +190,16 @@ private class CFGNode(
                     if (isIt == "setq") {
                         variableWrite = (el.childNodes[1] as AtomTreeNode).getValue()
                     }
-                    toStraight = CFGNode(partNode, it + 1, toContinue, allFunction=allFunction).run()
+                    if ((prevNode?.context ?: "") != "cond") {
+                        toStraight = CFGNode(partNode, it + 1, toContinue, allFunction=allFunction, this).run()
+                    } else {
+                        toStraight = toContinue
+                        toStraight?.prevNodes?.add(this)
+                    }
                 }
             }
         } else {
+            this.prevNode?.let { it1 -> toContinue?.prevNodes?.add(it1) }
             return toContinue
         }
         return this
@@ -209,6 +230,11 @@ private class CFGNode(
             callFunction.forEach { arr.add(it.functionName) }
             print("\tfunctions call: ${arr}\n")
         }
+        if (prevNodes.size > 0) {
+            print("\tprev nodes:")
+            prevNodes.forEach{ print(" ${it.context}") }
+            println()
+        }
 
         var i = 0
         val iNames = arrayOf("To true", "To False", "To Straight")
@@ -218,10 +244,17 @@ private class CFGNode(
                 (0..pad).forEach { _ -> print("-") }
                 print("${iColor[i]}${iNames[i]}: ${it.context}\n")
 
-                if (i != 2) {
-                    it.print(pad + 1)
-                } else {
-                    it.print(pad)
+                if (it.variableWrite != null) {
+                    print("\tvariable write: ${it.variableWrite}\n")
+                }
+
+                if (it != toStraight || it.context != "break") {
+
+                    if (i != 2) {
+                        it.print(pad + 1)
+                    } else {
+                        it.print(pad)
+                    }
                 }
             }
             ++i

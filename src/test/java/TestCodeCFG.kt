@@ -17,6 +17,7 @@ internal class TestCodeCFG {
         val originalCode = Files.readString(path)
 
         val scanner = Scanner(originalCode)
+        scanner.isOk()
         val ast = buildAst(scanner)
 
 
