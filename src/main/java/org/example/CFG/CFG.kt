@@ -38,7 +38,7 @@ object BuiltIn {
 class CFG(
     private val treeNode: TreeNode
 ) {
-    private var functions = ArrayList<FunctionNode>()
+    var functions = ArrayList<FunctionNode>()
     fun run() {
         for (el in treeNode.childNodes) {
             if ((el.childNodes[0] as AtomTreeNode).getValue() == "func") {
@@ -80,31 +80,31 @@ class CFG(
     }
 }
 
-private data class FunctionNode(
+data class FunctionNode(
     var cfg: CFGNode? = null,
     var functionName: String = "prog",
     var variablePass: ArrayList<String> = arrayListOf(),
 )
 
-private class CFGNode(
-    private val partNode: TreeNode,
-    private val it: Int,
-    private var toContinue: CFGNode? = null,
-    private val allFunction: ArrayList<FunctionNode> = ArrayList<FunctionNode>(),
-    private val prevNode: CFGNode? = null,
-    private var isList: Boolean = false,
-    private var iAmWarning: Boolean = false,
+class CFGNode(
+    val partNode: TreeNode,
+    val it: Int,
+    var toContinue: CFGNode? = null,
+    val allFunction: ArrayList<FunctionNode> = ArrayList<FunctionNode>(),
+    val prevNode: CFGNode? = null,
+    var isList: Boolean = false,
+    var iAmWarning: Boolean = false,
 ) {
-    private var toFalse: CFGNode? = null
-    private var toTrue: CFGNode? = null
-    private var toStraight: CFGNode? = null
-    private var variableWrite: String? = null
-    private var variableRead = TreeSet<String>()
-    private var callFunction = ArrayList<FunctionNode>()
-    private var prevNodes = ArrayList<CFGNode>()
-    private var toWarning: CFGNode? = null
+    var toFalse: CFGNode? = null
+    var toTrue: CFGNode? = null
+    var toStraight: CFGNode? = null
+    var variableWrite: String? = null
+    var variableRead = TreeSet<String>()
+    var callFunction = ArrayList<FunctionNode>()
+    var prevNodes = ArrayList<CFGNode>()
+    var toWarning: CFGNode? = null
 
-    private var context: String = ""
+    var context: String = ""
 
     private fun parseVariable(nodeWithVariable: TreeNode) {
         if (nodeWithVariable is ListTreeNode) {

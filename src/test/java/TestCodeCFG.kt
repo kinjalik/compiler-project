@@ -1,5 +1,6 @@
 
 import org.example.CFG.CFG
+import org.example.CFG.CycleGraphCount
 import org.example.Semantic.SemanticAnalyzer
 import org.example.ast.buildAst
 import org.example.tokens.Scanner
@@ -42,5 +43,14 @@ internal class TestCodeCFG {
         cfg.print()
         println()
 
+        (0..40).forEach{ _ -> print("=") }
+        println()
+        cfg.functions.forEach {
+            println("Cycle Graph Count for function ${it.functionName}: ${
+                CycleGraphCount().run(it)
+            }")
+        }
+
+        println()
     }
 }
