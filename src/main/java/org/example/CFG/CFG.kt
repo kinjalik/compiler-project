@@ -92,7 +92,8 @@ private class CFGNode(
     private var toContinue: CFGNode? = null,
     private val allFunction: ArrayList<FunctionNode> = ArrayList<FunctionNode>(),
     private val prevNode: CFGNode? = null,
-    private var isList: Boolean = false
+    private var isList: Boolean = false,
+    private var iAmWarning: Boolean = false,
 ) {
     private var toFalse: CFGNode? = null
     private var toTrue: CFGNode? = null
@@ -101,6 +102,7 @@ private class CFGNode(
     private var variableRead = TreeSet<String>()
     private var callFunction = ArrayList<FunctionNode>()
     private var prevNodes = ArrayList<CFGNode>()
+    private var toWarning: CFGNode? = null
 
     private var context: String = ""
 
@@ -127,6 +129,7 @@ private class CFGNode(
 
 
     fun run(): CFGNode? {
+
         if (prevNode != null) {
             prevNodes.add(prevNode)
         }
@@ -136,10 +139,16 @@ private class CFGNode(
                 return this
             }
             if (el.childNodes[0] is ListTreeNode) {
-                return CFGNode(el, 0, toContinue, allFunction=allFunction, prevNode, true).run()
+                return CFGNode(el, 0, toContinue, allFunction=allFunction, prevNode, true,
+                    iAmWarning=iAmWarning).run()
             }
             val isIt = (el.childNodes[0] as AtomTreeNode).getValue()
             context = isIt
+
+            if (iAmWarning) {
+                // TODO warning exception unreachable
+//                println("I am warning $context")
+            }
 
             for (i in 1 until el.childNodes.size) {
                 if (isIt == "setq" && i == 1) {
@@ -153,19 +162,24 @@ private class CFGNode(
 
             when (isIt) {
                 "cond" -> {
-                    toContinue = CFGNode(partNode, it + 1, toContinue,allFunction=allFunction, null).run()
+                    toContinue = CFGNode(partNode, it + 1, toContinue,allFunction=allFunction, null,
+                        iAmWarning=iAmWarning).run()
 
-                    toTrue = CFGNode(el, 2, toContinue, allFunction=allFunction, this).run()
+                    toTrue = CFGNode(el, 2, toContinue, allFunction=allFunction, this,
+                        iAmWarning=iAmWarning).run()
                     toFalse = if (el.childNodes.size > 3) {
-                        CFGNode(el, 3, toContinue,allFunction=allFunction, this).run()
+                        CFGNode(el, 3, toContinue,allFunction=allFunction, this,
+                            iAmWarning=iAmWarning).run()
                     } else {
                         toContinue
                     }
                 }
 
                 "while" -> {
-                    toFalse = CFGNode(partNode, it + 1, toContinue, allFunction=allFunction, this).run()
-                    toTrue = CFGNode(el.childNodes[2], 0, this, allFunction=allFunction, this).run()
+                    toFalse = CFGNode(partNode, it + 1, toContinue, allFunction=allFunction, this,
+                        iAmWarning=iAmWarning).run()
+                    toTrue = CFGNode(el.childNodes[2], 0, this, allFunction=allFunction, this,
+                        iAmWarning=iAmWarning).run()
                 }
 
                 "break" -> {
@@ -181,6 +195,7 @@ private class CFGNode(
                     toStraight = temp.toFalse
                     toStraight?.prevNodes?.add(this)
 
+                    toWarning = CFGNode(partNode, it + 1, toContinue,allFunction=allFunction, null, iAmWarning=true).run()
                 }
 
                 "return" -> {
@@ -192,7 +207,8 @@ private class CFGNode(
                         variableWrite = (el.childNodes[1] as AtomTreeNode).getValue()
                     }
                     if ((prevNode?.context ?: "") != "cond" || isList) {
-                        toStraight = CFGNode(partNode, it + 1, toContinue, allFunction=allFunction, this, true).run()
+                        toStraight = CFGNode(partNode, it + 1, toContinue, allFunction=allFunction, this, true,
+                            iAmWarning=iAmWarning).run()
                     } else {
                         toStraight = toContinue
 //                        if (toStraight?.context != "while") { unrechable
@@ -241,9 +257,9 @@ private class CFGNode(
         }
 
         var i = 0
-        val iNames = arrayOf("To true", "To False", "To Straight")
-        val iColor = arrayOf("\u001B[32m", "\u001b[31m", "\u001B[34m")
-        arrayOf(toTrue, toFalse, toStraight).forEach {
+        val iNames = arrayOf("To true", "To False", "To Straight", "To Warning")
+        val iColor = arrayOf("\u001B[32m", "\u001b[31m", "\u001B[34m", "\u001B[35m")
+        arrayOf(toTrue, toFalse, toStraight, toWarning).forEach {
             if (it != null) {
                 (0..pad).forEach { _ -> print("-") }
                 print("${iColor[i]}${iNames[i]}: ${it.context}\n")
