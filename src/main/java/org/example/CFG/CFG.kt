@@ -1,8 +1,10 @@
 package org.example.CFG
 
+import org.example.WarningCollection.WarningCollection
 import org.example.ast.AtomTreeNode
 import org.example.ast.ListTreeNode
 import org.example.ast.TreeNode
+import org.example.exceptions.CFGException
 import java.util.*
 
 object BuiltIn {
@@ -147,7 +149,7 @@ class CFGNode(
             context = isIt
 
             if (iAmWarning) {
-                // TODO warning exception unreachable
+                WarningCollection.addWarning("${el.childNodes[0].numberLine}:${el.childNodes[0].numberCh}:${context} is unreachable")
 //                println("I am warning $context")
             }
 
@@ -190,7 +192,7 @@ class CFGNode(
                     while (temp?.context != "while") {
                         temp = temp?.prevNode
                         if (temp == null) {
-                            throw Exception("break without while") // TODO kotlin warning
+                            throw CFGException("\"break\" without \"while\"")
                         }
                     }
                     toStraight = temp.toFalse
