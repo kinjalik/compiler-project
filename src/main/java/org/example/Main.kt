@@ -1,8 +1,12 @@
 package org.example
 
+import org.example.CFG.AllBranchHaveReturn
+import org.example.CFG.CFG
+import org.example.CFG.CycleGraphComplexity
 import org.example.Generator.CodeGenerator
 import org.example.Generator.CounterOpcode
 import org.example.Semantic.SemanticAnalyzer
+import org.example.WarningCollection.WarningCollection
 import org.example.ast.buildAst
 import org.example.tokens.Scanner
 import java.io.File
@@ -14,6 +18,8 @@ fun main(args: Array<String>) {
         throw Exception("java -jar <*.jar> <*.fs> <bytecode.output> (optional)")
     }
     try {
+        WarningCollection.create()
+
         val path = Path.of(args[0])
         val originalCode = Files.readString(path)
 
@@ -23,6 +29,14 @@ fun main(args: Array<String>) {
 
         val semanticAnalyzer = SemanticAnalyzer(ast)
         semanticAnalyzer.run()
+
+        val cfg = CFG(ast)
+        cfg.run()
+
+        AllBranchHaveReturn(cfg=cfg).run()
+        CycleGraphComplexity.run(cfg)
+
+        WarningCollection.printWarnings()
 
         CounterOpcode.reset()
         CodeGenerator.init(ast)
