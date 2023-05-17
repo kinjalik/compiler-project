@@ -103,6 +103,7 @@ class CFGNode(
     var callFunction = ArrayList<FunctionNode>()
     var prevNodes = ArrayList<CFGNode>()
     var toWarning: CFGNode? = null
+    var isReturn = false
 
     var context: String = ""
 
@@ -199,7 +200,7 @@ class CFGNode(
                 }
 
                 "return" -> {
-                    // NOTHING
+                    isReturn = true
                 }
 
                 else -> {

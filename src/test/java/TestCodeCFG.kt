@@ -1,4 +1,5 @@
 
+import org.example.CFG.AllBranchHaveReturn
 import org.example.CFG.CFG
 import org.example.CFG.CycleGraphCount
 import org.example.Semantic.SemanticAnalyzer
@@ -48,6 +49,14 @@ internal class TestCodeCFG {
         cfg.functions.forEach {
             println("Cycle Graph Count for function ${it.functionName}: ${
                 CycleGraphCount().run(it)
+            }")
+        }
+
+        (0..40).forEach{ _ -> print("=") }
+        println()
+        cfg.functions.forEach {
+            println("Cycle Graph Count for function ${it.functionName}: ${
+                AllBranchHaveReturn(it).run()
             }")
         }
 

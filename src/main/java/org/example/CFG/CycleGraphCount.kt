@@ -5,9 +5,7 @@ class CycleGraphCount {
     private var nodes = 0
     private var hashSet = HashSet<CFGNode>()
 
-    private fun toInt(b: Boolean): Int {
-        return if (b) {1} else {0}
-    }
+
     private fun run(nodeStart: CFGNode) {
         if (nodeStart in hashSet){
             return
